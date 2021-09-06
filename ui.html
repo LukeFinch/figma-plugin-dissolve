@@ -1,0 +1,123 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+<style>
+body {
+  background-size: contain;
+  margin: 0;
+  overflow: hidden;
+}
+
+</style>
+<script>
+//   let img = null
+//   function setup() {
+//   createCanvas(400, 400);
+//   noLoop()
+// }
+
+
+// function draw() {
+//  clear()
+//   if(img != null){
+//     let loadedImage = loadImage(img)
+//     image(loadedImage, 0 ,0)}
+//     else{
+//       background(55)
+//     }
+// }
+
+
+onmessage = (event) => {
+let msgType = event.data.pluginMessage.type
+let msg = event.data.pluginMessage
+
+if(msgType === 'exportImage' ){
+  let imageData = msg.data
+  
+  let base64img = `data:image/png;base64,` + btoa(String.fromCharCode.apply(null,imageData))
+  //document.body.style.backgroundImage = `url(${base64img})`
+  console.log(base64img)
+  img = base64img
+  //console.log("Hello from UI",msg)
+
+  const s =  p => {
+    //console.log(p)
+
+    p.preload = function(){
+      canvasImage = p.loadImage(img);
+    }
+
+p.setup = function(){
+  p.noLoop()
+  p.createCanvas(msg.w,msg.h);
+   p.image(canvasImage, 0,0)
+   
+   p.loadPixels()
+  for (var i = 3; i <= p.pixels.length; i+=4){
+    let xy = idx_to_xy(i,p.width)
+    let n = p.noise(i)//p.noise(xy[0],xy[1])
+    //console.log(n,p.pixels[i])
+    //n >= 0.5 && p.pixels[i] > 0
+    if(n*255 < p.pixels[i]){
+      //console.log('hit')
+      p.pixels[i] = 255
+    } else {
+      p.pixels[i] = 0
+    }
+  }
+  p.updatePixels()
+// var buffer = new ArrayBuffer(p.pixels.length)
+// var binary = new Uint8Array(buffer)
+// for (var i=0; i<binary.length; i++) {
+//     binary[i] = p.pixels[i];
+// }
+// console.log(binary)
+//  parent.postMessage({ pluginMessage: binary }, '*')
+  
+
+var canvas = document.getElementById('defaultCanvas0');
+
+canvas.toBlob(function(blob) {
+  console.log(blob)
+  let ab = blob.arrayBuffer().then(buffer => {
+    const u8 = new Uint8Array(buffer)
+    console.log(u8);
+ parent.postMessage({ pluginMessage: u8 }, '*')
+  })
+
+      });
+
+
+}
+p.draw = function(){
+  // p.loadPixels()
+  // for (var i = 3; i <= p.pixels.length; i+=4){
+  //   let xy = idx_to_xy(i,p.width)
+  //   let n = p.noise(xy[0],xy[1])
+  //   console.log(p.pixels[i])
+  //   if(n >= 0.5 && p.pixels[i] > 0.5){
+  //     p.pixels[i] = 1
+  //   } else {
+  //     p.pixels[i] = 0
+  //   }
+  // }
+  // p.updatePixels()
+}    
+ 
+}
+
+
+new p5(s)
+
+
+}
+}
+
+function idx_to_xy(idx,w){
+  let i = (idx + 1) /4;
+  let x = i % w
+  let y = Math.floor(i/w)
+  return [x,y]
+}
+
+
+</script>
